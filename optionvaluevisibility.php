@@ -177,7 +177,7 @@ function optionvaluevisibility_civicrm_postProcess($formName, &$form) {
  */
 function optionvaluevisibility_civicrm_fieldOptions($entity, $field, &$options, $params) {
   if (strpos($field, 'custom_') === 0) { //Check if it is custom field
-    $urlPath = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+    $urlPath = CRM_Utils_System::getUrlPath();
     $menu = CRM_Core_Menu::get(trim($urlPath, '/'));
 
     if (!empty($menu['is_public'])) {
