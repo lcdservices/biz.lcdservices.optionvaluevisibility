@@ -177,24 +177,28 @@ function optionvaluevisibility_civicrm_postProcess($formName, &$form) {
  */
 function optionvaluevisibility_civicrm_fieldOptions($entity, $field, &$options, $params) {
   if (strpos($field, 'custom_') === 0) { //Check if it is custom field
-    if (!CRM_Core_Permission::check('administer CiviCRM')) {
+    $urlPath = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+    $menu = CRM_Core_Menu::get(trim($urlPath, '/'));
+
+    if (!empty($menu['is_public'])) {
       $explode = explode('_', $field);
       $field_id = $explode[1];
       if(is_numeric($field_id) ) {
-        $field_params = array( 'id' => $field_id);
-        $custom_field = civicrm_api3('CustomField', 'get', $field_params);
-        
-        $option_group_id = $custom_field['values'][$field_id]['option_group_id'];
-        
-        $optionvalueParams = array('option_group_id' => $option_group_id);
-        $getOptionValue = civicrm_api3('OptionValue', 'get', $optionvalueParams);
-        foreach($getOptionValue['values'] as $key=>$value){
-          $optio_value_id = $value['id'];
-          if($value['is_visible'] == 0){
-            $val = $value['value'];
-            unset($options[$val]);
+        try {
+          $field_params = ['id' => $field_id];
+          $custom_field = civicrm_api3('CustomField', 'get', $field_params);
+          $option_group_id = $custom_field['values'][$field_id]['option_group_id'];
+          $optionvalueParams = ['option_group_id' => $option_group_id];
+          $getOptionValue = civicrm_api3('OptionValue', 'get', $optionvalueParams);
+
+          foreach ($getOptionValue['values'] as $key => $value) {
+            if ($value['is_visible'] == 0) {
+              $val = $value['value'];
+              unset($options[$val]);
+            }
           }
-        }  
+        }
+        catch (CiviCRM_API3_Exception $e) {}
       }
     }
   }
