@@ -163,11 +163,19 @@ function optionvaluevisibility_civicrm_postProcess($formName, &$form) {
   
   if( $formName == 'CRM_Custom_Form_Option' && ($form->getAction() == CRM_Core_Action::ADD || $form->getAction() == CRM_Core_Action::UPDATE)) {
     $params = $form->controller->exportValues('Option');
-    $id = $form->getVar('_id');
-    $optionValue = new CRM_Core_DAO_OptionValue();
-    $optionValue->id = $id;
-    $optionValue->is_visible = CRM_Utils_Array::value('is_visible', $params, FALSE);
-    $optionValue->save();
+    $option_group_id = $form->getVar('_optionGroupID');
+    $optionvalueParams = array(
+        'option_group_id' => $option_group_id,
+    );
+    $getOptionValue = civicrm_api3('OptionValue', 'get', $optionvalueParams);
+    if(isset($getOptionValue['values']) ){
+      foreach ($getOptionValue['values'] as $k => $value) {
+        $optionValue = new CRM_Core_DAO_OptionValue();
+        $optionValue->id = $value['id'];
+        $optionValue->is_visible = CRM_Utils_Array::value($value['value'], $params['option_visible'], FALSE);
+        $optionValue->save();
+      }
+    }
   }
 }
 
