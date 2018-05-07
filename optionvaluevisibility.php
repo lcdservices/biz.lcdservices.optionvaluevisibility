@@ -162,17 +162,19 @@ function optionvaluevisibility_civicrm_postProcess($formName, &$form) {
   }
   
   if( $formName == 'CRM_Custom_Form_Option' && ($form->getAction() == CRM_Core_Action::ADD || $form->getAction() == CRM_Core_Action::UPDATE)) {
-    $params = $form->controller->exportValues('Option');
+    $params = $form->getVar('_submitValues');
     $option_group_id = $form->getVar('_optionGroupID');
+    
     $optionvalueParams = array(
         'option_group_id' => $option_group_id,
+        'value' => $params['value'],
     );
     $getOptionValue = civicrm_api3('OptionValue', 'get', $optionvalueParams);
     if(isset($getOptionValue['values']) ){
       foreach ($getOptionValue['values'] as $k => $value) {
         $optionValue = new CRM_Core_DAO_OptionValue();
         $optionValue->id = $value['id'];
-        $optionValue->is_visible = CRM_Utils_Array::value($value['value'], $params['option_visible'], FALSE);
+        $optionValue->is_visible = $params['is_visible'];
         $optionValue->save();
       }
     }
@@ -210,4 +212,25 @@ function optionvaluevisibility_civicrm_fieldOptions($entity, $field, &$options, 
       }
     }
   }
+}
+
+/**
+ * Implementation of hook_civicrm_alterTemplateFile
+ */
+function optionvaluevisibility_civicrm_alterTemplateFile($formName, &$form, $context, &$tplName) {
+  if($formName == 'CRM_Custom_Page_Option' && $context == 'page'){
+    $possibleTpl = 'CRM/LCD/Custom/Page/Option.tpl';
+    $template = CRM_Core_Smarty::singleton();
+    if ($template->template_exists($possibleTpl)) {
+      $tplName = $possibleTpl;
+    }
+  }
+}
+/**
+ * Implementation of hook_civicrm_alterMenu
+ */
+function optionvaluevisibility_civicrm_alterMenu(&$items) {
+  $items['civicrm/ajax/optionlist'] = array(
+    'page_callback' => 'CRM_optionvaluevisibility_Custom_Page_AJAX::getOptionList',
+  );
 }
