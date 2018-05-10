@@ -43,7 +43,7 @@
             <th class='crm-custom_option-label'>{ts}Label{/ts}</th>
             <th class='crm-custom_option-value'>{ts}Value{/ts}</th>
             <th class='crm-custom_option-default_value'>{ts}Default{/ts}</th>
-            <th class='crm-custom_option-is_visible'>{ts}Is Visible{/ts}</th>
+            <th class='crm-custom_option-is_visible'>{ts}Visibility{/ts}</th>
             <th class='crm-custom_option-is_active'>{ts}Enabled?{/ts}</th>
             <th class='crm-custom_option-links'>&nbsp;</th>
             <th class='hiddenElement'>&nbsp;</th>
