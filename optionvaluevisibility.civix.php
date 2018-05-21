@@ -151,7 +151,7 @@ function _optionvaluevisibility_civix_civicrm_managed(&$entities) {
     $es = include $file;
     foreach ($es as $e) {
       if (empty($e['module'])) {
-        $e['module'] = 'com.aghstrategies.optionvaluevisibility';
+        $e['module'] = 'biz.lcdservices.optionvaluevisibility';
       }
       $entities[] = $e;
     }
