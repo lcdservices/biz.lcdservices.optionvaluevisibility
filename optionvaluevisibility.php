@@ -198,8 +198,11 @@ function optionvaluevisibility_civicrm_fieldOptions($entity, $field, &$options, 
           $field_params = ['id' => $field_id];
           $custom_field = civicrm_api3('CustomField', 'get', $field_params);
           $option_group_id = $custom_field['values'][$field_id]['option_group_id'];
-          $optionvalueParams = ['option_group_id' => $option_group_id];
-          $getOptionValue = civicrm_api3('OptionValue', 'get', $optionvalueParams);
+
+          $getOptionValue = civicrm_api3('OptionValue', 'get', [
+            'option_group_id' => $option_group_id,
+            'options' => ['limit' => 0]
+          ]);
 
           foreach ($getOptionValue['values'] as $key => $value) {
             if ($value['is_visible'] == 0) {
