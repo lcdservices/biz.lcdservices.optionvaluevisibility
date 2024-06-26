@@ -18,26 +18,10 @@ function optionvaluevisibility_civicrm_config(&$config) {
 }
 
 /**
- * Implementation of hook_civicrm_xmlMenu
- *
- * @param $files array(string)
- */
-function optionvaluevisibility_civicrm_xmlMenu(&$files) {
-  _optionvaluevisibility_civix_civicrm_xmlMenu($files);
-}
-
-/**
  * Implementation of hook_civicrm_install
  */
 function optionvaluevisibility_civicrm_install() {
   return _optionvaluevisibility_civix_civicrm_install();
-}
-
-/**
- * Implementation of hook_civicrm_uninstall
- */
-function optionvaluevisibility_civicrm_uninstall() {
-  return _optionvaluevisibility_civix_civicrm_uninstall();
 }
 
 /**
@@ -48,51 +32,22 @@ function optionvaluevisibility_civicrm_enable() {
 }
 
 /**
- * Implementation of hook_civicrm_disable
- */
-function optionvaluevisibility_civicrm_disable() {
-  return _optionvaluevisibility_civix_civicrm_disable();
-}
-
-/**
- * Implementation of hook_civicrm_upgrade
- *
- * @param $op string, the type of operation being performed; 'check' or 'enqueue'
- * @param $queue CRM_Queue_Queue, (for 'enqueue') the modifiable list of pending up upgrade tasks
- *
- * @return mixed  based on op. for 'check', returns array(boolean) (TRUE if upgrades are pending)
- *                for 'enqueue', returns void
- */
-function optionvaluevisibility_civicrm_upgrade($op, CRM_Queue_Queue $queue = NULL) {
-  return _optionvaluevisibility_civix_civicrm_upgrade($op, $queue);
-}
-
-/**
- * Implementation of hook_civicrm_managed
- *
- * Generate a list of entities to create/deactivate/delete when this module
- * is installed, disabled, uninstalled.
- */
-function optionvaluevisibility_civicrm_managed(&$entities) {
-  return _optionvaluevisibility_civix_civicrm_managed($entities);
-}
-
-/**
  * Implements hook_civicrm_entityTypes().
  */
 function optionvaluevisibility_civicrm_entityTypes(&$entityTypes) {
   $entityTypes['CRM_Core_DAO_OptionValue']['fields_callback'][]
     = function ($class, &$fields) {
-      $fields['is_visible'] = array('name' => 'is_visible',
-                'type' => CRM_Utils_Type::T_BOOLEAN,
-                'title' => ts('Option Is Visible'),
-                'description' => 'Is this option visible?',
-                'default' => '1',
-                'table_name' => 'civicrm_option_value',
-                'entity' => 'OptionValue',
-                'bao' => 'CRM_Core_BAO_OptionValue',
-                'localizable' => 0,
-      );
+      $fields['is_visible'] = [
+        'name' => 'is_visible',
+        'type' => CRM_Utils_Type::T_BOOLEAN,
+        'title' => ts('Option Is Visible'),
+        'description' => 'Is this option visible?',
+        'default' => '1',
+        'table_name' => 'civicrm_option_value',
+        'entity' => 'OptionValue',
+        'bao' => 'CRM_Core_BAO_OptionValue',
+        'localizable' => 0,
+      ];
     };
 }
 
@@ -103,30 +58,39 @@ function optionvaluevisibility_civicrm_entityTypes(&$entityTypes) {
  * @param CRM_Core_Form $form
  */
 function optionvaluevisibility_civicrm_buildForm($formName, &$form) {
-  if( $formName == 'CRM_Custom_Form_Field' && ($form->getAction() == CRM_Core_Action::ADD || $form->getAction() == CRM_Core_Action::UPDATE) ) {
+  if ($formName == 'CRM_Custom_Form_Field' &&
+    ($form->getAction() == CRM_Core_Action::ADD || $form->getAction() == CRM_Core_Action::UPDATE)
+  ) {
     $numoption = CRM_Custom_Form_Field::NUM_OPTION;
-    $status = array('Admin', 'Public');
-    for ($i = 1; $i <= $numoption; $i++) {     
+    $status = ['Admin', 'Public'];
+    for ($i = 1; $i <= $numoption; $i++) {
       $form->add('select', "option_visible[$i]", ts('Visible'), $status);
       $defaults['option_visible[' . $i . ']'] = 1;
     }
-    if($form->getAction() == CRM_Core_Action::ADD){
+
+    if ($form->getAction() == CRM_Core_Action::ADD){
       $form->setDefaults($defaults);
     }
-    CRM_Core_Region::instance('page-body')->add(array(
+
+    CRM_Core_Region::instance('page-body')->add([
       'template' => "CRM/LCD/customoptionvalue.tpl"
-    ));   
+    ]);
   }
-  if( $formName == 'CRM_Custom_Form_Option' && ($form->getAction() == CRM_Core_Action::ADD || $form->getAction() == CRM_Core_Action::UPDATE)) {
-    $status = array('Admin', 'Public');
+
+  if ($formName == 'CRM_Custom_Form_Option' &&
+    ($form->getAction() == CRM_Core_Action::ADD || $form->getAction() == CRM_Core_Action::UPDATE)
+  ) {
+    $status = ['Admin', 'Public'];
     $form->add('select', 'is_visible', ts('Visible'), $status);
     $defaults['is_visible'] = 1;
-    if($form->getAction() == CRM_Core_Action::ADD){
+
+    if ($form->getAction() == CRM_Core_Action::ADD){
       $form->setDefaults($defaults);
     }
-    CRM_Core_Region::instance('page-body')->add(array(
+
+    CRM_Core_Region::instance('page-body')->add([
       'template' => "CRM/LCD/customoption.tpl"
-    ));
+    ]);
   }
 }
 
@@ -137,20 +101,21 @@ function optionvaluevisibility_civicrm_buildForm($formName, &$form) {
  * @param CRM_Core_Form $form
  */
 function optionvaluevisibility_civicrm_postProcess($formName, &$form) {
-  if( $formName == 'CRM_Custom_Form_Field' && ($form->getAction() == CRM_Core_Action::ADD || $form->getAction() == CRM_Core_Action::UPDATE)) {
+  if ($formName == 'CRM_Custom_Form_Field' &&
+    ($form->getAction() == CRM_Core_Action::ADD || $form->getAction() == CRM_Core_Action::UPDATE)
+  ) {
     $params = $form->getVar('_submitValues');
     $id = $form->getVar('_id');
-    $field_params = array(
-      'id' => $id,
-    );
-    $custom_field = civicrm_api3('CustomField', 'get', $field_params);
+    $custom_field = civicrm_api3('CustomField', 'get', ['id' => $id]);
     $params['option_group_id'] = $custom_field['values'][$id]['option_group_id'];
-    if ($params['option_type'] == 1 && !empty($params['option_value']) && is_array($params['option_value'])) {
-      $optionvalueParams = array(
-        'option_group_id' => $params['option_group_id'],
-      );
-      $getOptionValue = civicrm_api3('OptionValue', 'get', $optionvalueParams);
-      if(isset($getOptionValue['values']) ){
+
+    if ($params['option_type'] == 1 &&
+      !empty($params['option_value']) &&
+      is_array($params['option_value'])
+    ) {
+      $getOptionValue = civicrm_api3('OptionValue', 'get', ['option_group_id' => $params['option_group_id']]);
+
+      if (isset($getOptionValue['values']) ){
         foreach ($getOptionValue['values'] as $k => $value) {
           $optionValue = new CRM_Core_DAO_OptionValue();
           $optionValue->id = $value['id'];
@@ -160,17 +125,19 @@ function optionvaluevisibility_civicrm_postProcess($formName, &$form) {
       }
     }
   }
-  
-  if( $formName == 'CRM_Custom_Form_Option' && ($form->getAction() == CRM_Core_Action::ADD || $form->getAction() == CRM_Core_Action::UPDATE)) {
+
+  if ($formName == 'CRM_Custom_Form_Option' &&
+    ($form->getAction() == CRM_Core_Action::ADD || $form->getAction() == CRM_Core_Action::UPDATE)
+  ) {
     $params = $form->getVar('_submitValues');
     $option_group_id = $form->getVar('_optionGroupID');
-    
-    $optionvalueParams = array(
-        'option_group_id' => $option_group_id,
-        'value' => $params['value'],
-    );
-    $getOptionValue = civicrm_api3('OptionValue', 'get', $optionvalueParams);
-    if(isset($getOptionValue['values']) ){
+
+    $getOptionValue = civicrm_api3('OptionValue', 'get', [
+      'option_group_id' => $option_group_id,
+      'value' => $params['value'],
+    ]);
+
+    if (isset($getOptionValue['values']) ){
       foreach ($getOptionValue['values'] as $k => $value) {
         $optionValue = new CRM_Core_DAO_OptionValue();
         $optionValue->id = $value['id'];
@@ -186,28 +153,31 @@ function optionvaluevisibility_civicrm_postProcess($formName, &$form) {
  *
  */
 function optionvaluevisibility_civicrm_fieldOptions($entity, $field, &$options, $params) {
-  if (strpos($field, 'custom_') === 0) { //Check if it is custom field
+  //Check if it is custom field
+  if (strpos($field, 'custom_') === 0) {
     $urlPath = CRM_Utils_System::currentPath();
     $menu = CRM_Core_Menu::get(trim($urlPath, '/'));
 
     if (!empty($menu['is_public'])) {
       $explode = explode('_', $field);
       $field_id = $explode[1];
-      if(is_numeric($field_id) ) {
+      if (is_numeric($field_id) ) {
         try {
           $field_params = ['id' => $field_id];
           $custom_field = civicrm_api3('CustomField', 'get', $field_params);
           $option_group_id = $custom_field['values'][$field_id]['option_group_id'];
 
-          $getOptionValue = civicrm_api3('OptionValue', 'get', [
-            'option_group_id' => $option_group_id,
-            'options' => ['limit' => 0]
-          ]);
+          if (!empty($option_group_id)) {
+            $getOptionValue = civicrm_api3('OptionValue', 'get', [
+              'option_group_id' => $option_group_id,
+              'options' => ['limit' => 0]
+            ]);
 
-          foreach ($getOptionValue['values'] as $key => $value) {
-            if ($value['is_visible'] == 0) {
-              $val = $value['value'];
-              unset($options[$val]);
+            foreach ($getOptionValue['values'] as $key => $value) {
+              if ($value['is_visible'] == 0) {
+                $val = $value['value'];
+                unset($options[$val]);
+              }
             }
           }
         }
@@ -221,9 +191,10 @@ function optionvaluevisibility_civicrm_fieldOptions($entity, $field, &$options, 
  * Implementation of hook_civicrm_alterTemplateFile
  */
 function optionvaluevisibility_civicrm_alterTemplateFile($formName, &$form, $context, &$tplName) {
-  if($formName == 'CRM_Custom_Page_Option' && $context == 'page'){
+  if ($formName == 'CRM_Custom_Page_Option' && $context == 'page'){
     $possibleTpl = 'CRM/LCD/Custom/Page/Option.tpl';
     $template = CRM_Core_Smarty::singleton();
+
     if ($template->template_exists($possibleTpl)) {
       $tplName = $possibleTpl;
     }
@@ -233,7 +204,7 @@ function optionvaluevisibility_civicrm_alterTemplateFile($formName, &$form, $con
  * Implementation of hook_civicrm_alterMenu
  */
 function optionvaluevisibility_civicrm_alterMenu(&$items) {
-  $items['civicrm/ajax/optionlist'] = array(
+  $items['civicrm/ajax/optionlist'] = [
     'page_callback' => 'CRM_optionvaluevisibility_Custom_Page_AJAX::getOptionList',
-  );
+  ];
 }
